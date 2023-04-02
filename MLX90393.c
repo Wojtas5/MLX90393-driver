@@ -11,7 +11,7 @@
 
 #include <stddef.h>
 #include <string.h>
-#include "SS_MLX90393.h"
+#include "MLX90393.h"
 
 /* ==================================================================== */
 /* =========================== Local macros ============================ */
@@ -107,11 +107,11 @@ static const float Mlx90393_Sensitivity_Lookup[2][8][4][2] =
 /* =================== Private function prototypes ==================== */
 /* ==================================================================== */
 
-static MLX_StatusType SS_MLX90393_cmdStartBurstMode(MLX_HandleType *mlx);
-static MLX_StatusType SS_MLX90393_cmdStartSingleMeasurementMode(MLX_HandleType *mlx);
-static MLX_StatusType SS_MLX90393_cmdExitMode(MLX_HandleType *mlx);
-static MLX_StatusType SS_MLX90393_cmdReset(MLX_HandleType *mlx);
-static MLX_StatusType SS_MLX90393_transceive(MLX_HandleType *mlx, uint8_t *writeData, uint8_t writeLen, uint8_t *readData, uint8_t readLen);
+static MLX_StatusType MLX90393_cmdStartBurstMode(MLX_HandleType* mlx);
+static MLX_StatusType MLX90393_cmdStartSingleMeasurementMode(MLX_HandleType* mlx);
+static MLX_StatusType MLX90393_cmdExitMode(MLX_HandleType* mlx);
+static MLX_StatusType MLX90393_cmdReset(MLX_HandleType* mlx);
+static MLX_StatusType MLX90393_transceive(MLX_HandleType* mlx, uint8_t* writeData, uint8_t writeLen, uint8_t* readData, uint8_t readLen);
 static uint8_t ValuesToRead(uint8_t measuredValues);
 static void afterResetDelay(void);
 
@@ -119,15 +119,15 @@ static void afterResetDelay(void);
 /* ========================= Public functions ========================= */
 /* ==================================================================== */
 
-MLX_StatusType SS_MLX90393_init(MLX_HandleType *mlx)
+MLX_StatusType MLX90393_init(MLX_HandleType* mlx)
 {
     MLX_StatusType status = MLX_ERROR;
     
-    status = SS_MLX90393_resetDevice(mlx);
+    status = MLX90393_resetDevice(mlx);
 
     if (MLX_OK == status)
     {
-        status = SS_MLX90393_write_registers(mlx);
+        status = MLX90393_write_registers(mlx);
     }
 
     mlx->measTimeManager.measurementStarted = MEASUREMENT_NOT_STARTED;
@@ -135,7 +135,7 @@ MLX_StatusType SS_MLX90393_init(MLX_HandleType *mlx)
     return status;
 }
 
-MLX_StatusType SS_MLX90393_write_registers(MLX_HandleType* mlx)
+MLX_StatusType MLX90393_write_registers(MLX_HandleType* mlx)
 {
     MLX_StatusType status = MLX_ERROR;
 
@@ -153,7 +153,7 @@ MLX_StatusType SS_MLX90393_write_registers(MLX_HandleType* mlx)
             default: break;
         }
 
-        status = SS_MLX90393_cmdWriteRegister(mlx, reg_addresses[i], reg_data);
+        status = MLX90393_cmdWriteRegister(mlx, reg_addresses[i], reg_data);
 
         if (MLX_OK != status)
         {
@@ -164,7 +164,7 @@ MLX_StatusType SS_MLX90393_write_registers(MLX_HandleType* mlx)
     return status;
 }
 
-MLX_StatusType SS_MLX90393_read_registers(MLX_HandleType* mlx)
+MLX_StatusType MLX90393_read_registers(MLX_HandleType* mlx)
 {
     MLX_StatusType status = MLX_ERROR;
 
@@ -172,7 +172,7 @@ MLX_StatusType SS_MLX90393_read_registers(MLX_HandleType* mlx)
 
     for (int i = 0; i < 3; ++i)
     {
-        uint16_t *reg_data = NULL;
+        uint16_t* reg_data = NULL;
 
         switch (reg_addresses[i])
         {
@@ -182,7 +182,7 @@ MLX_StatusType SS_MLX90393_read_registers(MLX_HandleType* mlx)
             default: break;
         }
 
-        status = SS_MLX90393_cmdReadRegister(mlx, reg_addresses[i], reg_data);
+        status = MLX90393_cmdReadRegister(mlx, reg_addresses[i], reg_data);
 
         if (MLX_OK != status)
         {
@@ -193,12 +193,12 @@ MLX_StatusType SS_MLX90393_read_registers(MLX_HandleType* mlx)
     return status;
 }
 
-void SS_MLX90393_clear_registers(MLX_HandleType* mlx)
+void MLX90393_clear_registers(MLX_HandleType* mlx)
 {
     memset(&mlx->settings, 0, sizeof(mlx->settings));
 }
 
-MLX_StatusType SS_MLX90393_getRawData(MLX_HandleType *mlx, MLX_RawValues *rawData, uint32_t(*timestamp)(void))
+MLX_StatusType MLX90393_getRawData(MLX_HandleType* mlx, MLX_RawValues* rawData, uint32_t(*timestamp)(void))
 {
     MLX_StatusType retValue = MLX_ERROR;
     uint8_t valuesCount = ValuesToRead(mlx->measuredValues);
@@ -214,7 +214,7 @@ MLX_StatusType SS_MLX90393_getRawData(MLX_HandleType *mlx, MLX_RawValues *rawDat
     //TODO: To be refactored later. Most likely it will be moved to a separate function
     if (MEASUREMENT_NOT_STARTED == mlx->measTimeManager.measurementStarted)
     {
-        retValue = SS_MLX90393_setMode(mlx);
+        retValue = MLX90393_setMode(mlx);
 
         if (MLX_OK == retValue)
         {
@@ -230,7 +230,7 @@ MLX_StatusType SS_MLX90393_getRawData(MLX_HandleType *mlx, MLX_RawValues *rawDat
     {
         int measEndTimestamp = timestamp();
 
-        retValue = SS_MLX90393_cmdReadMeasurement(mlx, readData, valuesCount);
+        retValue = MLX90393_cmdReadMeasurement(mlx, readData, valuesCount);
 
         if (MLX_OK == retValue)
         {
@@ -299,13 +299,13 @@ MLX_StatusType SS_MLX90393_getRawData(MLX_HandleType *mlx, MLX_RawValues *rawDat
 }
 
 #ifdef MLX_USE_CONVERSION
-MLX_StatusType SS_MLX90393_getConvertedData(MLX_HandleType *mlx, MLX_ConvertedValues *convertedData)
+MLX_StatusType MLX90393_getConvertedData(MLX_HandleType* mlx, MLX_ConvertedValues* convertedData)
 {
     MLX_StatusType retValue = MLX_ERROR;
     uint16_t hallconf = (mlx->settings.hallconf == MLX_HALLCONF_0x0) ? MLX_LOOKUP_HALLCONF_0x0 : MLX_LOOKUP_HALLCONF_0xC;
     MLX_RawValues rawData;
 
-    retValue = SS_MLX90393_getRawData(mlx, &rawData);
+    retValue = MLX90393_getRawData(mlx, &rawData);
 
     if (MLX_OK == retValue)
     {
@@ -335,20 +335,20 @@ MLX_StatusType SS_MLX90393_getConvertedData(MLX_HandleType *mlx, MLX_ConvertedVa
 }
 #endif /* MLX_USE_CONVERSION */
 
-uint8_t SS_MLX90393_getConversionTimeMsInt(MLX_HandleType *mlx)
+uint8_t MLX90393_getConversionTimeMsInt(MLX_HandleType* mlx)
 {
     return (uint8_t)(Mlx90393_Tconvm[mlx->settings.reg2.bits.digital_filtering][mlx->settings.reg2.bits.oversampling] + 1);
 }
 
-MLX_StatusType SS_MLX90393_resetDevice(MLX_HandleType *mlx)
+MLX_StatusType MLX90393_resetDevice(MLX_HandleType* mlx)
 {
     MLX_StatusType retValue = MLX_ERROR;
 
-    retValue = SS_MLX90393_cmdExitMode(mlx);
+    retValue = MLX90393_cmdExitMode(mlx);
 
     if (MLX_OK == retValue)
     {
-        retValue = SS_MLX90393_cmdReset(mlx);
+        retValue = MLX90393_cmdReset(mlx);
     }
 
     /* Small delay for stability */
@@ -357,7 +357,7 @@ MLX_StatusType SS_MLX90393_resetDevice(MLX_HandleType *mlx)
     return retValue;
 }
 
-MLX_StatusType SS_MLX90393_setMode(MLX_HandleType *mlx)
+MLX_StatusType MLX90393_setMode(MLX_HandleType* mlx)
 {
     MLX_StatusType retValue = MLX_ERROR;
 
@@ -365,19 +365,19 @@ MLX_StatusType SS_MLX90393_setMode(MLX_HandleType *mlx)
     {
         case MLX_EXIT_MODE:
         {
-            SS_MLX90393_cmdExitMode(mlx);
+            MLX90393_cmdExitMode(mlx);
             break;
         }
 
         case MLX_BURST_MODE:
         {
-            retValue = SS_MLX90393_cmdStartBurstMode(mlx);
+            retValue = MLX90393_cmdStartBurstMode(mlx);
             break;
         }
 
         case MLX_SINGLE_MEASUREMENT_MODE:
         {
-            retValue = SS_MLX90393_cmdStartSingleMeasurementMode(mlx);
+            retValue = MLX90393_cmdStartSingleMeasurementMode(mlx);
             break;
         }
 
@@ -392,14 +392,14 @@ MLX_StatusType SS_MLX90393_setMode(MLX_HandleType *mlx)
     return retValue;
 }
 
-MLX_StatusType SS_MLX90393_cmdReadMeasurement(MLX_HandleType *mlx, int16_t *readData, uint8_t valuesCount)
+MLX_StatusType MLX90393_cmdReadMeasurement(MLX_HandleType* mlx, int16_t* readData, uint8_t valuesCount)
 {
     MLX_StatusType retValue = MLX_ERROR;
     uint8_t cmd = MLX_CMD_READ_MEASUREMENT | mlx->measuredValues;
     uint8_t readLen = VALUES_COUNT_TO_BYTES(valuesCount);
     uint8_t readBuffer[9];
 
-    retValue = SS_MLX90393_transceive(mlx, &cmd, sizeof(cmd), readBuffer, readLen);
+    retValue = MLX90393_transceive(mlx, &cmd, sizeof(cmd), readBuffer, readLen);
 
     if (MLX_OK == retValue)
     {
@@ -429,13 +429,13 @@ MLX_StatusType SS_MLX90393_cmdReadMeasurement(MLX_HandleType *mlx, int16_t *read
     return retValue;
 }
 
-MLX_StatusType SS_MLX90393_cmdReadRegister(MLX_HandleType *mlx, uint8_t regAddress, uint16_t *regData)
+MLX_StatusType MLX90393_cmdReadRegister(MLX_HandleType* mlx, uint8_t regAddress, uint16_t* regData)
 {
     MLX_StatusType retValue = MLX_ERROR;
     uint8_t cmd[2] = {MLX_CMD_READ_REGISTER, regAddress << 2};
     uint8_t readBuffer[3];
 
-    retValue = SS_MLX90393_transceive(mlx, cmd, sizeof(cmd), readBuffer, sizeof(readBuffer));
+    retValue = MLX90393_transceive(mlx, cmd, sizeof(cmd), readBuffer, sizeof(readBuffer));
 
     if (MLX_OK == retValue)
     {
@@ -454,13 +454,13 @@ MLX_StatusType SS_MLX90393_cmdReadRegister(MLX_HandleType *mlx, uint8_t regAddre
     return retValue;
 }
 
-MLX_StatusType SS_MLX90393_cmdWriteRegister(MLX_HandleType *mlx, uint8_t reg_address, uint16_t reg_data)
+MLX_StatusType MLX90393_cmdWriteRegister(MLX_HandleType* mlx, uint8_t reg_address, uint16_t reg_data)
 {
     MLX_StatusType retValue = MLX_ERROR;
     uint8_t command[4] = {MLX_CMD_WRITE_REGISTER, (uint8_t)(reg_data >> 8), (uint8_t)reg_data, reg_address << 2};
     uint8_t status = 0u;
 
-    retValue = SS_MLX90393_transceive(mlx, command, sizeof(command), &status, sizeof(status));
+    retValue = MLX90393_transceive(mlx, command, sizeof(command), &status, sizeof(status));
 
     if (MLX_OK == retValue)
     {
@@ -477,13 +477,13 @@ MLX_StatusType SS_MLX90393_cmdWriteRegister(MLX_HandleType *mlx, uint8_t reg_add
 /* ======================== Private functions ========================= */
 /* ==================================================================== */
 
-static MLX_StatusType SS_MLX90393_cmdStartBurstMode(MLX_HandleType *mlx)
+static MLX_StatusType MLX90393_cmdStartBurstMode(MLX_HandleType* mlx)
 {
     MLX_StatusType retValue = MLX_ERROR;
     uint8_t cmd = MLX_CMD_START_BURST_MODE | mlx->measuredValues;
     uint8_t status = 0u;
 
-    retValue = SS_MLX90393_transceive(mlx, &cmd, sizeof(cmd), &status, sizeof(status));
+    retValue = MLX90393_transceive(mlx, &cmd, sizeof(cmd), &status, sizeof(status));
 
     if (MLX_OK == retValue)
     {
@@ -503,13 +503,13 @@ static MLX_StatusType SS_MLX90393_cmdStartBurstMode(MLX_HandleType *mlx)
     return retValue;
 }
 
-static MLX_StatusType SS_MLX90393_cmdStartSingleMeasurementMode(MLX_HandleType *mlx)
+static MLX_StatusType MLX90393_cmdStartSingleMeasurementMode(MLX_HandleType* mlx)
 {
     MLX_StatusType retValue = MLX_ERROR;
     uint8_t cmd = MLX_CMD_START_SINGLE_MODE | mlx->measuredValues;
     uint8_t status = 0u;
 
-    retValue = SS_MLX90393_transceive(mlx, &cmd, sizeof(cmd), &status, sizeof(status));
+    retValue = MLX90393_transceive(mlx, &cmd, sizeof(cmd), &status, sizeof(status));
 
     if (MLX_OK == retValue)
     {
@@ -529,13 +529,13 @@ static MLX_StatusType SS_MLX90393_cmdStartSingleMeasurementMode(MLX_HandleType *
     return retValue;
 }
 
-static MLX_StatusType SS_MLX90393_cmdExitMode(MLX_HandleType *mlx)
+static MLX_StatusType MLX90393_cmdExitMode(MLX_HandleType* mlx)
 {
     MLX_StatusType retValue = MLX_ERROR;
     uint8_t cmd = MLX_CMD_EXIT_MODE;
     uint8_t status = 0u;
 
-    retValue = SS_MLX90393_transceive(mlx, &cmd, sizeof(cmd), &status, sizeof(status));
+    retValue = MLX90393_transceive(mlx, &cmd, sizeof(cmd), &status, sizeof(status));
 
     if (MLX_OK == retValue)
     {
@@ -555,13 +555,13 @@ static MLX_StatusType SS_MLX90393_cmdExitMode(MLX_HandleType *mlx)
     return retValue;
 }
 
-static MLX_StatusType SS_MLX90393_cmdReset(MLX_HandleType *mlx)
+static MLX_StatusType MLX90393_cmdReset(MLX_HandleType* mlx)
 {
     MLX_StatusType retValue = MLX_ERROR;
     uint8_t cmd = MLX_CMD_RESET;
     uint8_t status = 0u;
 
-    retValue = SS_MLX90393_transceive(mlx, &cmd, sizeof(cmd), &status, sizeof(status));
+    retValue = MLX90393_transceive(mlx, &cmd, sizeof(cmd), &status, sizeof(status));
 
     if (MLX_OK == retValue)
     {
@@ -581,8 +581,8 @@ static MLX_StatusType SS_MLX90393_cmdReset(MLX_HandleType *mlx)
     return retValue;
 }
 
-static MLX_StatusType SS_MLX90393_transceive(MLX_HandleType *mlx, uint8_t *writeData, uint8_t writeLen,
-                                             uint8_t *readData, uint8_t readLen)
+static MLX_StatusType MLX90393_transceive(MLX_HandleType* mlx, uint8_t* writeData, uint8_t writeLen,
+                                             uint8_t* readData, uint8_t readLen)
 {
     MLX_StatusType retValue = MLX_ERROR;
 

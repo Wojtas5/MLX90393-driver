@@ -280,18 +280,18 @@ MLX_HandleType;
 /* ==================== Public function prototypes ==================== */
 /* ==================================================================== */
 
-MLX_StatusType SS_MLX90393_init(MLX_HandleType *mlx);
-MLX_StatusType SS_MLX90393_write_registers(MLX_HandleType* mlx);
-MLX_StatusType SS_MLX90393_read_registers(MLX_HandleType* mlx);
-void SS_MLX90393_clear_registers(MLX_HandleType* mlx);
-MLX_StatusType SS_MLX90393_getRawData(MLX_HandleType *mlx, MLX_RawValues *rawData, uint32_t(*timestamp)(void));
-MLX_StatusType SS_MLX90393_getConvertedData(MLX_HandleType *mlx, MLX_ConvertedValues *convertedData);
-uint8_t SS_MLX90393_getConversionTimeMsInt(MLX_HandleType *mlx);
-MLX_StatusType SS_MLX90393_resetDevice(MLX_HandleType *mlx);
-MLX_StatusType SS_MLX90393_setMode(MLX_HandleType *mlx);
-MLX_StatusType SS_MLX90393_cmdReadMeasurement(MLX_HandleType *mlx, int16_t *readData, uint8_t readLen);
-MLX_StatusType SS_MLX90393_cmdReadRegister(MLX_HandleType *mlx, uint8_t regAddress, uint16_t *regData);
-MLX_StatusType SS_MLX90393_cmdWriteRegister(MLX_HandleType *mlx, uint8_t regAddress, uint16_t regData);
+MLX_StatusType MLX90393_init(MLX_HandleType* mlx);
+MLX_StatusType MLX90393_write_registers(MLX_HandleType* mlx);
+MLX_StatusType MLX90393_read_registers(MLX_HandleType* mlx);
+void MLX90393_clear_registers(MLX_HandleType* mlx);
+MLX_StatusType MLX90393_getRawData(MLX_HandleType* mlx, MLX_RawValues* rawData, uint32_t(*timestamp)(void));
+MLX_StatusType MLX90393_getConvertedData(MLX_HandleType* mlx, MLX_ConvertedValues* convertedData);
+uint8_t MLX90393_getConversionTimeMsInt(MLX_HandleType* mlx);
+MLX_StatusType MLX90393_resetDevice(MLX_HandleType* mlx);
+MLX_StatusType MLX90393_setMode(MLX_HandleType* mlx);
+MLX_StatusType MLX90393_cmdReadMeasurement(MLX_HandleType* mlx, int16_t* readData, uint8_t readLen);
+MLX_StatusType MLX90393_cmdReadRegister(MLX_HandleType* mlx, uint8_t regAddress, uint16_t* regData);
+MLX_StatusType MLX90393_cmdWriteRegister(MLX_HandleType* mlx, uint8_t regAddress, uint16_t regData);
 
 #ifdef __cplusplus
 }
